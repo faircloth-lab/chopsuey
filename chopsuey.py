@@ -39,24 +39,45 @@ def get_args():
     parser.add_argument(
             "enzymes",
             type=str,
-            args='+',
+            nargs='+',
             help="""The enzyme(s) to chop with""",
         )
     return parser.parse_args()
 
 def get_all_fasta_files(dna):
     fastas = []
-    for ext in ['*.fasta', '*.fsa', '*.fa']:
+    for ext in ['*.fasta', '*.fsa', '*.fa', '*.fas']:
         fastas.extend(glob.glob(os.path.join(dna, ext)))
     return fastas
 
 def main():
     args = get_args()
     fastas = get_all_fasta_files(args.dna)
-    for source in fastas:
-        seq = SeqIO.read(open(file,'rU'),'fasta')
+    results = {}
+    for fasta in fastas:
+        fasta_name = os.path.basename(fasta)
+        fasta_results = {}
+        seq = SeqIO.read(open(fasta, 'rU'), 'fasta')
         for attr, value in Restriction.__dict__.iteritems():
-            pdb.set_trace()
+            if attr in args.enzymes:
+                name = attr
+                cut_site = value.elucidate()
+                cuts = sorted(value.search(seq.seq))
+                lengths = [v - cuts[k - 1] for k, v in enumerate(cuts[1:])]
+                fasta_results[name] = {
+                        'cut_site': cut_site,
+                        'cuts': len(cuts),
+                        'cuts_per_bp': float(len(cuts)) / len(seq.seq),
+                        'cut_length': sum(lengths) / len(lengths)
+                    }
+        results[fasta_name] = fasta_results
+    for fasta_name, values in results.iteritems():
+        for enzyme_name, data in values.iteritems():
+            print "{0},{1},{2[cuts]},{2[cuts_per_bp]},{2[cut_site]},{2[cut_length]}".format(
+                    fasta_name,
+                    enzyme_name,
+                    data)
+    pdb.set_trace()
 
 if __name__ == '__main__':
     main()
