@@ -7,25 +7,26 @@ Author: Brant Faircloth
 Created by Brant Faircloth on 06 August 2012 14:08 PDT (-0700)
 Copyright (c) 2012 Brant C. Faircloth. All rights reserved.
 
-Description: 
+Description: Return summary data from a single virual digest of a directory of
+targets using one or more restriction enzymes.
 
 """
 
 import os
-import re
 import pdb
 import glob
-import string
 import argparse
 from Bio import SeqIO
 from Bio import Restriction
 
-import pdb
+#import pdb
+
 
 class FullPaths(argparse.Action):
     """Expand user- and relative-paths"""
     def __call__(self, parser, namespace, values, option_string=None):
         setattr(namespace, self.dest, os.path.abspath(os.path.expanduser(values)))
+
 
 def get_args():
     """Get arguments from CLI"""
@@ -44,11 +45,13 @@ def get_args():
         )
     return parser.parse_args()
 
+
 def get_all_fasta_files(dna):
     fastas = []
     for ext in ['*.fasta', '*.fsa', '*.fa', '*.fas']:
         fastas.extend(glob.glob(os.path.join(dna, ext)))
     return fastas
+
 
 def main():
     args = get_args()
@@ -56,6 +59,7 @@ def main():
     results = {}
     for fasta in fastas:
         fasta_name = os.path.basename(fasta)
+        print "Working on {}...".format(fasta)
         fasta_results = {}
         seq = SeqIO.read(open(fasta, 'rU'), 'fasta')
         for attr, value in Restriction.__dict__.iteritems():
@@ -71,6 +75,7 @@ def main():
                         'cut_length': sum(lengths) / len(lengths)
                     }
         results[fasta_name] = fasta_results
+    print "\nFile,Enzyme,Cuts,Cuts per bp,Cut Site,Avg. Cut Length"
     for fasta_name, values in results.iteritems():
         for enzyme_name, data in values.iteritems():
             print "{0},{1},{2[cuts]},{2[cuts_per_bp]},{2[cut_site]},{2[cut_length]}".format(
