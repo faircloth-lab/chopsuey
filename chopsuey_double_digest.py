@@ -19,9 +19,8 @@ This will return combinations of the first enzyme (PstI) with the other enzymes.
 """
 
 import os
-import pdb
+#import pdb
 import glob
-import copy
 import math
 import numpy
 import argparse
