@@ -83,6 +83,12 @@ def get_args():
             default=10000000,
             help="""Chunk size.""",
         )
+    parser.add_argument(
+        "--velvet",
+        action="store_true",
+        default=False,
+        help="""Output data as velvet-style contigs""",
+    )
     return parser.parse_args()
 
 
@@ -123,11 +129,13 @@ def chunk_scaffolds(genome, size):
 
 
 def worker(work):
-    args, fasta, batch = work
+    args, fasta, batch, idx = work
     # write new slices out to file
     fd, temp_name = tempfile.mkstemp(suffix='.fasta')
+    # we need an cnt for all reads in chunk
+    cnt = 0
     # there may be more than one sequence in a chunked file
-    for seq in  SeqIO.parse(open(fasta, 'rU'), 'fasta'):
+    for seq in SeqIO.parse(open(fasta, 'rU'), 'fasta'):
         cuts = batch.search(seq.seq, linear=False)
         # merge all cuts across enzymes
         all_cuts = []
@@ -141,13 +149,16 @@ def worker(work):
         all = [0] + all + [len(seq)]
         # create a list of tuples that are start and end coords
         slices = [(all[k], v) for k, v in enumerate(all[1:]) if args.min_frag_size <= v - all[k] < args.max_frag_size]
-
         for slice in slices:
             seqslice = seq[slice[0]:slice[1]]
-            seqslice.id = "{}|{}-{}".format(seqslice.id, slice[0], slice[1])
+            if args.velvet:
+                seqslice.id = "NODE_{}{}|{}|{}-{}".format(idx, cnt, seqslice.id, slice[0], slice[1])
+            else:
+                seqslice.id = "{}|{}-{}".format(seqslice.id, slice[0], slice[1])
             seqslice.name = ""
             seqslice.description = ""
             os.write(fd, seqslice.format('fasta'))
+            cnt += 1
     os.close(fd)
     sys.stdout.write(".")
     sys.stdout.flush()
@@ -168,7 +179,7 @@ def main():
     chunks = chunk_scaffolds(args.twobit, args.chunk_size)
     # create a restriction batch
     batch = Restriction.RestrictionBatch(args.enzymes)
-    work = [(args, chunk, batch) for chunk in chunks]
+    work = [(args, chunk, batch, k) for k, chunk in enumerate(chunks)]
     if args.cores > 1:
         assert args.cores <= multiprocessing.cpu_count(), "You've specified more cores than you have"
         pool = multiprocessing.Pool(args.cores)
