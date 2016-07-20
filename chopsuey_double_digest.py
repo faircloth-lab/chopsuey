@@ -114,7 +114,7 @@ def get_opposite_end_results(arguments, seq, base, enzyme, compare, all_cuts, cu
                 else:
                     fragments.append(len(slc))
                 break
-    if len(fragments) >= 0:
+    if len(fragments) > 0:
         combo = "{0}-{1}".format(arguments.first, enzyme)
         print "\tCombo {}...".format(combo)
         cut_results[combo] = {
@@ -137,7 +137,7 @@ def get_generic_end_results(arguments, enzyme, compare, all_cuts, cut_results):
                 fragments.append(slc)
         else:
             fragments.append(slc)
-    if len(fragments) >= 0:
+    if len(fragments) > 0:
         combo = "{0}-{1}".format(arguments.first, enzyme)
         print "\tCombo {}...".format(combo)
         cut_results[combo] = {
