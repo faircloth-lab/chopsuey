@@ -114,17 +114,18 @@ def get_opposite_end_results(arguments, seq, base, enzyme, compare, all_cuts, cu
                 else:
                     fragments.append(len(slc))
                 break
-    combo = "{0}-{1}".format(arguments.first, enzyme)
-    print "\tCombo {}...".format(combo)
-    cut_results[combo] = {
-            'cuts': len(fragments),
-            'cuts_per_bp': float(len(fragments)) / compare['seq_len'],
-            'cut_length': numpy.mean(fragments),
-            'cut_95_ci': 1.96 * numpy.std(fragments, ddof=1) / math.sqrt(len(fragments)),
-            'min': min([i for i in fragments if i > 0]),
-            'max': max(fragments)
-        }
-    return cut_results
+    if len(fragments) >= 0:
+        combo = "{0}-{1}".format(arguments.first, enzyme)
+        print "\tCombo {}...".format(combo)
+        cut_results[combo] = {
+                'cuts': len(fragments),
+                'cuts_per_bp': float(len(fragments)) / compare['seq_len'],
+                'cut_length': numpy.mean(fragments),
+                'cut_95_ci': 1.96 * numpy.std(fragments, ddof=1) / math.sqrt(len(fragments)),
+                'min': min([i for i in fragments if i > 0]),
+                'max': max(fragments)
+            }
+        return cut_results
 
 
 def get_generic_end_results(arguments, enzyme, compare, all_cuts, cut_results):
@@ -136,17 +137,18 @@ def get_generic_end_results(arguments, enzyme, compare, all_cuts, cut_results):
                 fragments.append(slc)
         else:
             fragments.append(slc)
-    combo = "{0}-{1}".format(arguments.first, enzyme)
-    print "\tCombo {}...".format(combo)
-    cut_results[combo] = {
-            'cuts': len(fragments),
-            'cuts_per_bp': float(len(fragments)) / compare['seq_len'],
-            'cut_length': numpy.mean(fragments),
-            'cut_95_ci': 1.96 * numpy.std(fragments, ddof=1) / math.sqrt(len(fragments)),
-            'min': min([i for i in fragments if i > 0]),
-            'max': max(fragments)
-        }
-    return cut_results
+    if len(fragments) >= 0:
+        combo = "{0}-{1}".format(arguments.first, enzyme)
+        print "\tCombo {}...".format(combo)
+        cut_results[combo] = {
+                'cuts': len(fragments),
+                'cuts_per_bp': float(len(fragments)) / compare['seq_len'],
+                'cut_length': numpy.mean(fragments),
+                'cut_95_ci': 1.96 * numpy.std(fragments, ddof=1) / math.sqrt(len(fragments)),
+                'min': min([i for i in fragments if i > 0]),
+                'max': max(fragments)
+            }
+        return cut_results
 
 
 def get_double_digest(arguments, single_cuts, seq):
