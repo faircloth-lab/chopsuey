@@ -189,8 +189,8 @@ def main():
         results[fasta_name] = get_double_digest(args, single_cuts, seq)
         #pdb.set_trace()
     print "\nFile,Enzyme Combo,Cuts,Cuts per bp,Avg. fragment length,95CI cut length,Min(size),Max(size)"
-    if results is not None:
-        for fasta_name, values in results.iteritems():
+    for fasta_name, values in results.iteritems():
+        if values is not None:
             for combo_name, data in values.iteritems():
                 print "{0},{1},{2[cuts]},{2[cuts_per_bp]},{2[cut_length]},{2[cut_95_ci]},{2[min]},{2[max]}".format(
                         fasta_name,
